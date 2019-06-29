@@ -7,23 +7,28 @@ import ch.qos.logback.core.spi.FilterReply;
 import org.slf4j.Marker;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 public class LogsuficateInterceptor extends TurboFilter {
 
     public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
         if (params != null) {
-            boolean logContainsSensitiveFields = false;
+            boolean anyContainsValues = false;
+            Object[] maker = params.clone();
             for (int i = 0; i < params.length; i++) {
+                boolean logContainsSensitiveFields = false;
+                Map<String, String> nameToMask = new HashMap<String, String>();
                 for (Field field : params[i].getClass().getDeclaredFields()) {
                     field.setAccessible(true);
                     if (field.isAnnotationPresent(Logsuficate.class)) {
-                        params[i] = field.getAnnotation(Logsuficate.class).value();
-                        logContainsSensitiveFields = true;
+                        nameToMask.put(field.getName(), field.getAnnotation(Logsuficate.class).value());
+                        anyContainsValues = true;
                     }
                 }
             }
-            if (logContainsSensitiveFields) {
-                logger.debug(format, params);
+            if (anyContainsValues) {
+                logger.debug(format, maker);
                 return FilterReply.DENY;
             }
         }

@@ -5,7 +5,13 @@ import lombok.ToString;
 @ToString
 public class SensitiveField {
 
-    @Logsuficate("_USER_PASSWORD_")
+    public Integer userId = 1231;
+
+    @Logsuficate("USER-PASSWORD")
     public String password = "SADASdasdasd";
+
+    public String username = "Bradley";
+
+    public String email = "something@email.net";
 
 }
